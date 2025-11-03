@@ -67,7 +67,11 @@ Mobile: Camera image-to-text/recognition for scanning; push notifications for re
 Story: Bridges the nostalgia of real card collecting with an organized, digital “dex.” Players grow their verified collection by scanning the cards they actually own and discover nearby places to buy or trade.
 Market: Yu-Gi-Oh! players (casual to competitive), collectors, and local card shops.
 Habit: Used after pack openings to scan new cards, before meets/tournaments to review decks, and periodically via reminders to keep collections current.
-Scope: V1—API browsing, scan-to-unlock, reminders; V2—deck building & favorites; V3—scan history, offline mode; V4—price tracking, account sync.
+Scope: 
+V1—API browsing, scan-to-unlock, reminders; 
+V2—deck building & favorites; 
+V3—scan history, offline mode; 
+V4—price tracking, account sync.
 
 Select a repo
 DuelDex-App (Android/Kotlin)
