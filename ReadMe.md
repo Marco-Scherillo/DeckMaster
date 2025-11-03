@@ -8,6 +8,11 @@
 
 * Wireframes
 
+<img width="599" height="373" alt="Wrieframe1" src="https://github.com/user-attachments/assets/a378dd53-d85b-437a-b45d-dc1dff8e41b3" />
+<img width="596" height="400" alt="wireframe2" src="https://github.com/user-attachments/assets/ff6350bf-2e0a-4829-b0a0-439285b7b575" />
+<img width="563" height="426" alt="Wrieframe3" src="https://github.com/user-attachments/assets/0e73cd52-d88b-4d86-937b-98e5352934f8" />
+<img width="544" height="395" alt="wireframe4" src="https://github.com/user-attachments/assets/8c547b6e-92d9-4c4b-97c4-65003072e93b" />
+
 ---
 
 ## **Overview**
