@@ -1,77 +1,100 @@
 ---
 title: DigiDex Brainstorming
+---
+
+# Mobile App Dev - App Brainstorming Example
+
+## Favorite Existing Apps
+
+**List:**
+- Instagram  
+- TCGPlayer  
+- Yu-Gi-Oh! Neuron  
+- Google Lens  
+- Google Maps  
+- Reddit  
+- Notes  
+- Messages  
+- eBay  
+- Cardmarket  
 
 ---
 
-Mobile App Dev - App Brainstorming Example
-Favorite Existing Apps - List
+## Favorite Existing Apps - Categorize and Evaluate
 
-Instagram
-TCGPlayer
-Yu-Gi-Oh! Neuron
-Google Lens
-Google Maps
-Reddit
-Notes
-Messages
-eBay
-Cardmarket
+### **Instagram**
+**Category:** Photo & Video / Social  
+**Mobile:** Website is view-only; uses camera; mobile-first experience.  
+**Story:** Allows users to share their lives in pictures and enhance their content with filters.  
+**Market:** Anyone who takes pictures. Users can follow and hashtag by interests, engaging with relevant content.  
+**Habit:** Users post multiple times a day. “Stories” encourage spontaneous sharing. Endless exploration of photos makes it very habit-forming.  
+**Scope:** Began as a simple photo-sharing app; expanded to include Stories, Reels, and Messaging.
 
-Favorite Existing Apps - Categorize and Evaluate
+---
 
-Instagram
-Category: Photo & Video / Social
-Mobile: Website is view only, uses camera, mobile-first experience.
-Story: Allows users to share their lives in pictures and enhance their content with filters.
-Market: Anyone that takes pictures could enjoy this app. Ability to follow and hashtag based on interests and categories allows users with unique interests to engage with relevant content.
-Habit: Users can post throughout the day many times. Features like "Stories" encourage more candid posting as well. Users can explore endless pictures in any category imaginable whenever they want. Very habit forming!
-Scope: Instagram started out extremely narrow focused, just posting pics and viewing feeds. Has expanded to a somewhat larger scope including "Instagram Stories" and messenger features.
+### **TCGPlayer**
+**Category:** Shopping / Collectibles  
+**Mobile:** Uses camera to scan trading cards; mobile-first pricing and collection tools.  
+**Story:** Lets collectors check card details and prices, manage binders, and buy/sell on the go.  
+**Market:** Trading card players, collectors, and card shops.  
+**Habit:** Frequently used after pack openings or before trades to verify prices and card info.  
+**Scope:** Started as a pricing guide; expanded into a marketplace and deck management tool.
 
-TCGPlayer
-Category: Shopping / Collectibles
-Mobile: Uses camera to scan trading cards, mobile-first pricing and collection tools.
-Story: Lets collectors quickly check card details and prices, manage binders, and buy/sell on the go.
-Market: Trading card game players, collectors, and card shops.
-Habit: Opened frequently after pack openings or before trades to verify prices and card info.
-Scope: Began as a pricing guide; expanded to marketplace, collection management, and deck tools.
+---
 
-New App Ideas - List
+## New App Ideas - List
 
-DuelDex (Yu-Gi-Oh! deck companion with scan-to-unlock)
-Allows users to browse all cards via API while using the phone camera to scan physical cards and mark them as “scanned/unlocked.” Includes Deck Scanner Reminders and a Shops tab (map) to find nearby card stores.
+- **DuelDex** — Yu-Gi-Oh! deck companion with scan-to-unlock feature.  
+  Allows users to browse all cards via API, scan physical cards with the camera, and mark them as “unlocked.” Includes deck reminders and a Shops tab with local store maps.
 
-Card Value Tracker
-Tracks a personal watchlist of cards and alerts users when prices move beyond thresholds.
+- **Card Value Tracker** — Watchlist of cards with price alerts when thresholds are crossed.
 
-Digital Trade Binder
-Lets users mark scanned cards as “for trade,” generate shareable lists, and log trades.
+- **Digital Trade Binder** — Scan cards marked “for trade,” generate shareable lists, and log trades.
 
-Pack Opening Logger
-Quickly logs new pulls with camera, timestamps, and optional location tag (shop/event).
+- **Pack Opening Logger** — Log new pulls using the camera with timestamps and optional location tags.
 
-Tournament Tracker
-Stores match results, opponents, and deck versions; visualizes win rates over time.
+- **Tournament Tracker** — Track matches, opponents, deck versions, and visualize win rates.
 
-Top 3 New App Ideas
+---
 
-DuelDex
-Pack Opening Logger
-Digital Trade Binder
+## Top 3 New App Ideas
 
-New App Ideas - Evaluate and Categorize
+1. **DuelDex**  
+2. **Pack Opening Logger**  
+3. **Digital Trade Binder**
 
-DuelDex
-Description: A Yu-Gi-Oh! deck companion that connects physical collecting to a digital experience. Users can view every card via API, but cards appear grayed out until they are scanned with the phone camera to mark them as “scanned/unlocked.” Includes Deck Scanner Reminders and a Shops (Map) tab showing nearby card stores and directions.
-Category: Gaming / Companion Tool
-Mobile: Camera image-to-text/recognition for scanning; push notifications for reminders; GPS + embedded map for local shops; local storage for offline progress.
-Story: Bridges the nostalgia of real card collecting with an organized, digital “dex.” Players grow their verified collection by scanning the cards they actually own and discover nearby places to buy or trade.
-Market: Yu-Gi-Oh! players (casual to competitive), collectors, and local card shops.
-Habit: Used after pack openings to scan new cards, before meets/tournaments to review decks, and periodically via reminders to keep collections current.
-Scope: 
-V1—API browsing, scan-to-unlock, reminders; 
-V2—deck building & favorites; 
-V3—scan history, offline mode; 
-V4—price tracking, account sync.
+---
 
-Select a repo
-DuelDex-App (Android/Kotlin)
+## New App Ideas - Evaluate and Categorize
+
+### **DuelDex**
+**Description:**  
+A Yu-Gi-Oh! deck companion connecting physical collecting with a digital experience. Users can view every card via API, but cards appear grayed out until scanned via the phone camera. Includes Deck Scanner Reminders and a Shops (Map) tab showing nearby card stores.
+
+**Category:** Gaming / Companion Tool  
+**Mobile Features:**  
+- Camera image recognition for scanning  
+- Push notifications for reminders  
+- GPS and embedded map for nearby shops  
+- Local storage for offline progress  
+
+**Story:**  
+Bridges the nostalgia of real card collecting with a digital “dex.” Players grow their verified collection by scanning cards they own and discovering local trade spots.  
+
+**Market:**  
+Yu-Gi-Oh! players (casual and competitive), collectors, and local card shops.  
+
+**Habit:**  
+Used after pack openings to scan new cards, before meets/tournaments to review decks, and periodically via reminders to stay updated.  
+
+**Scope:**  
+- **V1:** API browsing, scan-to-unlock, reminders  
+- **V2:** Deck building & favorites  
+- **V3:** Scan history, offline mode  
+- **V4:** Price tracking, account sync  
+
+---
+
+## Select a Repo
+**Repository Name:** `DuelDex-App`  
+**Tech Stack:** Android / Kotlin  
