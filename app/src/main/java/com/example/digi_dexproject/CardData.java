@@ -36,14 +36,9 @@ public class CardData {
     @SerializedName("attribute")
     private String attribute;
 
-    @SerializedName("ygoprodeck_url")
-    private String ygoprodeckUrl;
-
     @SerializedName("card_images")
     private List<CardImage> cardImages;
 
-    @SerializedName("card_prices")
-    private List<CardPrice> cardPrices;
 
     public int getId() {
         return id;
@@ -85,15 +80,10 @@ public class CardData {
         return attribute;
     }
 
-    public String getYgoprodeckUrl() {
-        return ygoprodeckUrl;
-    }
+
 
     public List<CardImage> getCardImages() {
         return cardImages;
     }
 
-    public List<CardPrice> getCardPrices() {
-        return cardPrices;
-    }
 }

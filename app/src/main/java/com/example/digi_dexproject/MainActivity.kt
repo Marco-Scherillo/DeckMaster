@@ -65,9 +65,10 @@ class MainActivity : AppCompatActivity() {
                                     def = if (cardData.def != 0) cardData.def else null
                                     level = if (cardData.level != 0) cardData.level else null
                                     attribute = cardData.attribute
-                                    ygoprodeckUrl = cardData.ygoprodeckUrl
+                                    val mainImage = cardData.cardImages?.firstOrNull()
+
                                     imageUrl = cardData.cardImages?.firstOrNull()?.imageUrl
-                                    tcgplayerPrice = cardData.cardPrices?.firstOrNull()?.tcgplayerPrice
+                                    imageUrlSmall = cardData.cardImages?.firstOrNull()?.imageUrlSmall
                                 }
                             }
                             cardDao.insertAll(cardEntities)

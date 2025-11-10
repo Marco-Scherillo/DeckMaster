@@ -33,12 +33,11 @@ public class CardEntity {
 
     public String attribute;
 
-    @ColumnInfo(name = "ygoprodeck_url")
-    public String ygoprodeckUrl;
+
 
     @ColumnInfo(name = "image_url")
     public String imageUrl;
 
-    @ColumnInfo(name = "tcgplayer_price")
-    public String tcgplayerPrice;
+    @ColumnInfo(name = "image_url_small")
+    public String imageUrlSmall;
 }
