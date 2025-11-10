@@ -1,12 +1,16 @@
 package com.example.digi_dexproject
 
+import android.content.Context
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.Fragment
+import com.example.digi_dexproject.ui.AuthFragment
 import com.example.digi_dexproject.ui.HomeFragment
 import com.example.digi_dexproject.ui.MapFragment
 import com.example.digi_dexproject.ui.ScanFragment
@@ -20,6 +24,16 @@ import retrofit2.Callback
 import retrofit2.Response
 
 class MainActivity : AppCompatActivity() {
+
+    private lateinit var bottomNavigation: BottomNavigationView
+    private lateinit var prefs: SharedPreferences
+
+    companion object {
+        const val PREFS_NAME = "DigiDexPrefs"
+        const val KEY_IS_LOGGED_IN = "isLoggedIn"
+        const val KEY_USERNAME = "username"
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -30,7 +44,27 @@ class MainActivity : AppCompatActivity() {
             insets
         }
 
-        val bottomNavigation = findViewById<BottomNavigationView>(R.id.bottom_navigation)
+        prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        bottomNavigation = findViewById(R.id.bottom_navigation)
+
+        if (isLoggedIn()) {
+            setupMainAppUI()
+        } else {
+            setupAuthUI()
+        }
+    }
+
+    private fun isLoggedIn(): Boolean {
+        return prefs.getBoolean(KEY_IS_LOGGED_IN, false)
+    }
+
+    private fun setupAuthUI() {
+        bottomNavigation.visibility = View.GONE
+        loadFragment(AuthFragment())
+    }
+
+    private fun setupMainAppUI() {
+        bottomNavigation.visibility = View.VISIBLE
         bottomNavigation.setOnNavigationItemSelectedListener {
             var selectedFragment: Fragment = HomeFragment()
             when (it.itemId) {
@@ -47,11 +81,37 @@ class MainActivity : AppCompatActivity() {
         loadFragment(HomeFragment())
     }
 
-    private fun loadFragment(fragment: Fragment) {
+    fun onLoginSuccess(username: String) {
+        // Save login state
+        with(prefs.edit()) {
+            putBoolean(KEY_IS_LOGGED_IN, true)
+            putString(KEY_USERNAME, username)
+            apply()
+        }
+        // Transition to the main app
+        setupMainAppUI()
+    }
+
+    fun logout() {
+        // Clear login state
+        with(prefs.edit()) {
+            clear()
+            apply()
+        }
+        // Transition to the auth screen
+        setupAuthUI()
+    }
+
+    // This function is now public to be callable by our auth fragments
+    fun loadFragment(fragment: Fragment) {
         supportFragmentManager.beginTransaction()
             .replace(R.id.fragment_container, fragment)
             .commit()
-        initializeDatabase()
+
+        // Only initialize the card database if we are loading the HomeFragment
+        if (fragment is HomeFragment) {
+            initializeDatabase()
+        }
     }
 
     private fun initializeDatabase() {
