@@ -10,7 +10,23 @@ public interface ApiService {
             @Query("startdate") String startDate,
             @Query("enddate") String endDate,
             @Query("dateregion") String dateRegion,
-            @Query("num") int num,
-            @Query("offset") int offset
+            @Query("num") Integer num,
+            @Query("offset") Integer offset
+    );
+
+    @GET("cardinfo.php")
+    Call<CardApiResponse> getSpecificCard(
+            @Query("name") String name,
+            @Query("startdate") String startDate,
+            @Query("enddate") String endDate,
+            @Query("dateregion") String dateRegion
+    );
+
+    @GET("cardinfo.php")
+    Call<CardApiResponse> getCardsBySet(
+            @Query("cardset") String cardset,
+            @Query("dateregion") String dateRegion,
+            @Query("startdate") String startDate,
+            @Query("enddate") String endDate
     );
 }
