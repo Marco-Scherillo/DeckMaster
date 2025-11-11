@@ -177,12 +177,12 @@ The app also includes **Deck Scanner Reminders**, which notify players when they
 * # Milestone 2 - Build Sprint 1 (Unit 8)
 
 ## GitHub Project board
-<img src="https://imgur.com/a/sImN8yW.jpg" width=600>
+<img src="https://i.imgur.com/npmHlLq.png" width=600>
 
 ## Issue cards
 
-<img src="https://i.imgur.com/a/ERYESWz.jpg" width=600>
-- [Add screenshot of your Project Board with the issues that you're working on in the **NEXT sprint**. It should include issues for next unit with assigned owners.] <img src="https://i.imgur.com/a/0nagMH3.jpg" width=600>
+<img src="https://i.imgur.com/250W2e7.png" width=600>
+<img src="https://i.imgur.com/8feDAeM.png" width=600>
 
 ## Issues worked on this sprint
 - List the issues you completed this sprint
