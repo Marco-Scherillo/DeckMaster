@@ -173,3 +173,20 @@ The app also includes **Deck Scanner Reminders**, which notify players when they
 * **Shops:** Map view centered on user with nearby shop markers.
 
 * **Reminders:** Simple toggle list for notification settings.
+
+* # Milestone 2 - Build Sprint 1 (Unit 8)
+
+## GitHub Project board
+<img src="https://imgur.com/a/sImN8yW.jpg" width=600>
+
+## Issue cards
+
+<img src="https://i.imgur.com/a/ERYESWz.jpg" width=600>
+- [Add screenshot of your Project Board with the issues that you're working on in the **NEXT sprint**. It should include issues for next unit with assigned owners.] <img src="https://i.imgur.com/a/0nagMH3.jpg" width=600>
+
+## Issues worked on this sprint
+- List the issues you completed this sprint
+- [Add giphy that shows current build progress for Milestone 2. Note: We will be looking for progression of work between Milestone 2 and 3. Make sure your giphys are not duplicated and clearly show the change from Sprint 1 to 2.]
+
+<br>
+
