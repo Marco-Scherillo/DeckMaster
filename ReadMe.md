@@ -191,7 +191,8 @@ The app also includes **Deck Scanner Reminders**, which notify players when they
 4. Log in Screen
 5. Fetch cards from API and save to database
 - Build Progress
-  <img src="https://i.imgur.com/pzJYYY0.gif" width=600>
+  
+<img src="https://i.imgur.com/pzJYYY0.gif" width=600>
 
 <br>
 
