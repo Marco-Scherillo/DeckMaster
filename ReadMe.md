@@ -185,8 +185,13 @@ The app also includes **Deck Scanner Reminders**, which notify players when they
 <img src="https://i.imgur.com/8feDAeM.png" width=600>
 
 ## Issues worked on this sprint
-- List the issues you completed this sprint
-- [Add giphy that shows current build progress for Milestone 2. Note: We will be looking for progression of work between Milestone 2 and 3. Make sure your giphys are not duplicated and clearly show the change from Sprint 1 to 2.]
+1. Settings Screen
+2. Implement bottom nav (Home, Scan, Settings)
+3. Design card grid (locked/unlocked states) and Recycler View
+4. Log in Screen
+5. Fetch cards from API and save to database
+- Build Progress
+  <img src="https://i.imgur.com/pzJYYY0.gif" width=600>
 
 <br>
 
