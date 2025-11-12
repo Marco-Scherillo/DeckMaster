@@ -52,7 +52,7 @@ The app also includes **Deck Scanner Reminders**, which notify players when they
 
 #### **Required Features**
 
-* Users can browse **all Yu-Gi-Oh\! cards** through the public API.
+* Users can browse **all Yu-Gi-Oh\! cards** through the public API. [x]
 
 * Users can **scan cards using their camera** to mark them as “scanned/unlocked.”
 
