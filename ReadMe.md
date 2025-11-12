@@ -196,8 +196,8 @@ The app also includes **Deck Scanner Reminders**, which notify players when they
 
 ## Completed User Stories
 
-- [x] User can browse all Yu-Gi-Oh! cards through the public API  
-- [x] User can fetch and save cards to the database  
+- [x] User can browse all Yu-Gi-Oh! cards through the public API
+- [x] User can register and log in in saved.
 - [x] User can navigate using the bottom navigation bar (Home, Scan, Settings)  
 - [ ] User can scan cards using their camera (in progress)  
 - [ ] Shops Tab displays nearby card shops (upcoming)
