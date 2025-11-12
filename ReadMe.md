@@ -52,7 +52,7 @@ The app also includes **Deck Scanner Reminders**, which notify players when they
 
 #### **Required Features**
 
-* Users can browse **all Yu-Gi-Oh\! cards** through the public API. <span style="color:green">✔️</span>
+* Users can browse **all Yu-Gi-Oh\! cards** through the public API.
 
 * Users can **scan cards using their camera** to mark them as “scanned/unlocked.”
 
@@ -193,6 +193,14 @@ The app also includes **Deck Scanner Reminders**, which notify players when they
 - Build Progress
   
 <img src="https://i.imgur.com/pzJYYY0.gif" width=600>
+
+## Completed User Stories
+
+- [x] User can browse all Yu-Gi-Oh! cards through the public API  
+- [x] User can fetch and save cards to the database  
+- [x] User can navigate using the bottom navigation bar (Home, Scan, Settings)  
+- [ ] User can scan cards using their camera (in progress)  
+- [ ] Shops Tab displays nearby card shops (upcoming)
 
 <br>
 
