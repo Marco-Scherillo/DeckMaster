@@ -23,7 +23,8 @@ import com.google.android.libraries.places.api.Places
 import com.google.android.libraries.places.api.model.Place
 import com.google.android.libraries.places.api.net.FindCurrentPlaceRequest
 import com.google.android.libraries.places.api.net.PlacesClient
-
+import com.google.android.libraries.places.api.model.RectangularBounds
+import com.google.android.libraries.places.api.net.SearchByTextRequest
 class MapFragment : Fragment(), OnMapReadyCallback {
 
     private lateinit var mMap: GoogleMap
@@ -148,38 +149,47 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
     @SuppressLint("MissingPermission")
     private fun searchForHobbyStores(location: LatLng) {
-        // Define the fields you want to get for each place.
-        val placeFields = listOf(Place.Field.ID, Place.Field.NAME, Place.Field.LAT_LNG, Place.Field.ADDRESS, Place.Field.TYPES)
-        val request = FindCurrentPlaceRequest.newInstance(placeFields)
+        // 1. Define the fields to return for each place.
+        val placeFields = listOf(Place.Field.ID, Place.Field.NAME, Place.Field.LAT_LNG, Place.Field.ADDRESS)
 
-        val placeResult = placesClient.findCurrentPlace(request)
-        placeResult.addOnCompleteListener { task ->
-            if (task.isSuccessful && task.result != null) {
-                val likelyPlaces = task.result
+        // 2. Define the search area: a rectangular box around the user's location.
+        // This creates a search area of roughly 10km x 10km.
+        val searchBounds = RectangularBounds.newInstance(
+            LatLng(location.latitude - 0.05, location.longitude - 0.05), // Southwest corner
+            LatLng(location.latitude + 0.05, location.longitude + 0.05)  // Northeast corner
+        )
 
-                mMap.clear() // Clear previous markers
+        // 3. Build the search request using SearchByTextRequest.
+        val searchRequest = SearchByTextRequest.builder("hobby store", placeFields)
+            .setIncludedType("store") // Narrows down the search to places that are stores.
+            .setLocationBias(searchBounds) // Tells Google to prefer results within our search area.
+            .build()
 
-                for (placeLikelihood in likelyPlaces.placeLikelihoods) {
-                    val place = placeLikelihood.place
-                    val placeTypes = place.types
-                    val placeName = place.name?.lowercase() ?: ""
-                    if (placeTypes != null && (placeTypes.contains(Place.Type.STORE) || placeTypes.contains(Place.Type.BOOK_STORE) || placeName.contains("hobby"))) {
-                        Log.i(TAG, "Found store: ${place.name} with types: ${place.types}")
-                        place.latLng?.let { latLng ->
-                            mMap.addMarker(
-                                MarkerOptions()
-                                    .title(place.name)
-                                    .position(latLng)
-                                    .snippet(place.address)
-                            )
-                        }
+        // 4. Execute the search and handle the results.
+        placesClient.searchByText(searchRequest)
+            .addOnSuccessListener { response ->
+                // Success! We have a list of places.
+                mMap.clear() // Clear any old markers.
+                Log.i(TAG, "Found ${response.places.size} nearby stores.")
+
+                // Loop through the results and add a marker for each one.
+                for (place in response.places) {
+                    place.latLng?.let { latLng ->
+                        mMap.addMarker(
+                            MarkerOptions()
+                                .title(place.name)
+                                .position(latLng)
+                                .snippet(place.address)
+                        )
                     }
                 }
-            } else {
-                Log.e(TAG, "Exception while fetching places: ", task.exception)
             }
-        }
+            .addOnFailureListener { exception ->
+                // The search failed. Log the error.
+                Log.e(TAG, "Error searching for places: ", exception)
+            }
     }
+
 
     companion object {
         private const val TAG = "MapFragment"
