@@ -30,7 +30,8 @@ class ReminderWorker(appContext: Context, workerParams: WorkerParameters) : Work
         const val NOTIFICATION_CHANNEL_ID = "scan_reminder_channel"
     }
 
-    //     * All your background logic goes here. This is the way to do it but for testing it will go off every 15 seconds wiht the new function
+    //     * All your background logic goes here. This is the way to do it but for testing it will go off
+    //     every 15 seconds with the new function
 //    override fun doWork(): Result {
 //        val prefs = applicationContext.getSharedPreferences(MainActivity.PREFS_NAME, Context.MODE_PRIVATE)
 //
