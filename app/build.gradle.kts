@@ -1,9 +1,20 @@
+import java.util.Properties
+import java.io.FileInputStream
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.kapt)
     id("kotlin-parcelize")
 }
+
+val apiKeyProperties = Properties()
+val apiKeyPropertiesFile = file(".API_KEY")
+if (apiKeyPropertiesFile.exists()) {
+    apiKeyProperties.load(FileInputStream(apiKeyPropertiesFile))
+}
+
+val mapsApiKey = apiKeyProperties.getProperty("MAPS_API_KEY") ?: ""
 
 android {
     namespace = "com.example.digi_dexproject"
@@ -17,6 +28,7 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        resValue("string", "MAPS_API_KEY", mapsApiKey)
     }
 
     buildTypes {
@@ -34,6 +46,10 @@ android {
     }
     kotlinOptions {
         jvmTarget = "1.8"
+    }
+
+    buildFeatures {
+        buildConfig = true
     }
 }
 

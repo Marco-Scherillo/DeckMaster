@@ -43,9 +43,8 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // IMPORTANT: Replace "YOUR_API_KEY" with your actual Google Maps API key.
         if (!Places.isInitialized()) {
-            Places.initialize(requireContext(), "YOUR_API_KEY")
+            Places.initialize(requireContext(), getString(R.string.MAPS_API_KEY))
         }
         placesClient = Places.createClient(requireContext())
 
@@ -118,7 +117,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                 // No need to call getLocationPermission() here, it creates a loop.
             }
         } catch (e: SecurityException) {
-            Log.e("Exception: %s", e.message, e)
+            Log.e(TAG, "Security exception in updateLocationUI", e)
         }
     }
 
@@ -136,14 +135,14 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                         searchNearbyStores(currentLocation)
                     } else {
                         Log.d(TAG, "Current location is null. Using defaults.")
-                        Log.e(TAG, "Exception: %s", task.exception)
+                        Log.e(TAG, "Exception getting location: ", task.exception)
                         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(defaultLocation, 15f))
                         mMap.uiSettings.isMyLocationButtonEnabled = false
                     }
                 }
             }
         } catch (e: SecurityException) {
-            Log.e("Exception: %s", e.message, e)
+            Log.e(TAG, "Security exception in getDeviceLocation", e)
         }
     }
 
@@ -162,20 +161,22 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
                 for (placeLikelihood in likelyPlaces.placeLikelihoods) {
                     val place = placeLikelihood.place
-                    // Filter for places that are likely to be hobby or game stores
-                    val placeTypes = place.placeTypes
-                    if (placeTypes != null && (placeTypes.contains("HOBBY_SHOP") || placeTypes.contains("BOOK_STORE") || placeTypes.contains("STORE"))) {
-                        Log.i(TAG, "Found store: ${place.name} with types: ${place.placeTypes}")
-                        mMap.addMarker(
-                            MarkerOptions()
-                                .title(place.name)
-                                .position(place.latLng!!)
-                                .snippet(place.address)
-                        )
+                    val placeTypes = place.types
+                    val placeName = place.name?.lowercase() ?: ""
+                    if (placeTypes != null && (placeTypes.contains(Place.Type.STORE) || placeTypes.contains(Place.Type.BOOK_STORE) || placeName.contains("hobby"))) {
+                        Log.i(TAG, "Found store: ${place.name} with types: ${place.types}")
+                        place.latLng?.let { latLng ->
+                            mMap.addMarker(
+                                MarkerOptions()
+                                    .title(place.name)
+                                    .position(latLng)
+                                    .snippet(place.address)
+                            )
+                        }
                     }
                 }
             } else {
-                Log.e(TAG, "Exception while fetching places: %s", task.exception)
+                Log.e(TAG, "Exception while fetching places: ", task.exception)
             }
         }
     }
