@@ -32,8 +32,6 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     private lateinit var mMap: GoogleMap
     private lateinit var placesClient: PlacesClient
     private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
-
-    // --- NEW ---
     private lateinit var searchView: SearchView
 
     private val defaultLocation = LatLng(40.7357, -74.1724) // Newark, NJ
@@ -86,6 +84,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
         mMap.uiSettings.isZoomControlsEnabled = true
+        mMap.uiSettings.isZoomGesturesEnabled = true
         mMap.uiSettings.isCompassEnabled = true
         getLocationPermission()
         updateLocationUI()
