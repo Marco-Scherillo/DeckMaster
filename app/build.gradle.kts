@@ -8,13 +8,12 @@ plugins {
     id("kotlin-parcelize")
 }
 
-val apiKeyProperties = Properties()
-val apiKeyPropertiesFile = file(".API_KEY")
-if (apiKeyPropertiesFile.exists()) {
-    apiKeyProperties.load(FileInputStream(apiKeyPropertiesFile))
+val properties = Properties()
+val propertiesFile = rootProject.file("local.properties")
+if (propertiesFile.exists()) {
+    properties.load(FileInputStream(propertiesFile))
 }
-
-val mapsApiKey = apiKeyProperties.getProperty("MAPS_API_KEY") ?: ""
+val mapsApiKey = properties.getProperty("MAPS_API_KEY") ?: ""
 
 android {
     namespace = "com.example.digi_dexproject"
@@ -28,7 +27,8 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        resValue("string", "MAPS_API_KEY", mapsApiKey)
+        buildConfigField("String", "MAPS_API_KEY", "\"$mapsApiKey\"")
+        manifestPlaceholders["MAPS_API_KEY"] = mapsApiKey
     }
 
     buildTypes {
