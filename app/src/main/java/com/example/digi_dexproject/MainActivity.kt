@@ -28,6 +28,7 @@ import androidx.work.*
 import java.util.concurrent.TimeUnit
 import android.os.Build
 import androidx.activity.result.contract.ActivityResultContracts
+import com.example.digi_dexproject.ui.ProfileFragment
 
 
 class MainActivity : AppCompatActivity() {
@@ -91,6 +92,7 @@ class MainActivity : AppCompatActivity() {
                 R.id.navigation_home -> selectedFragment = HomeFragment()
                 R.id.navigation_scan -> selectedFragment = ScanFragment()
                 R.id.navigation_map -> selectedFragment = MapFragment()
+                R.id.navigation_profile -> selectedFragment = ProfileFragment()
                 R.id.navigation_settings -> selectedFragment = SettingsFragment()
             }
             loadFragment(selectedFragment)
