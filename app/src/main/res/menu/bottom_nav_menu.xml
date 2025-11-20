@@ -13,6 +13,10 @@
         android:icon="@drawable/baseline_map_24"
         android:title="Map" />
     <item
+        android:id="@+id/navigation_profile"
+        android:icon="@drawable/outline_person_24"
+        android:title="Profile" />
+    <item
         android:id="@+id/navigation_settings"
         android:icon="@android:drawable/ic_menu_manage"
         android:title="Settings" />
