@@ -115,7 +115,8 @@ class ReminderWorker(appContext: Context, workerParams: WorkerParameters) : Work
 
         if (ActivityCompat.checkSelfPermission(applicationContext, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
             with(NotificationManagerCompat.from(applicationContext)) {
-                notify(1, builder.build()) // Use a unique ID for the notification
+                val notificationId = System.currentTimeMillis().toInt() // Use a unique ID for each notification
+                notify(notificationId, builder.build()) // Use a unique ID for the notification
             }
         }
     }
