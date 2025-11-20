@@ -1,5 +1,6 @@
 <resources>
     <string name="app_name">Digi-Dex Project</string>
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+
+    <!-- ... your other strings like app_name ... -->
+    <string name="MAPS_API_KEY" translatable="false">${MAPS_API_KEY}</string>
 </resources>
