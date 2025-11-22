@@ -128,27 +128,33 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         }
 
         if (locationPermissionGranted) {
-            @SuppressLint("MissingPermission")
-            val cancellationTokenSource = CancellationTokenSource()
-            fusedLocationProviderClient.getCurrentLocation(
-                Priority.PRIORITY_HIGH_ACCURACY,
-                cancellationTokenSource.token
-            )
-                .addOnSuccessListener { location: Location? ->
-                    val searchLocation = if (location != null) {
-                        currentLocation = location
-                        val currentLatLng = LatLng(location.latitude, location.longitude)
-                        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 15f))
-                        currentLatLng
-                    } else {
-                        mMap.cameraPosition.target
+            try {
+                // Suppress lint warning, as we are handling the exception.
+                @SuppressLint("MissingPermission")
+                val cancellationTokenSource = CancellationTokenSource()
+                fusedLocationProviderClient.getCurrentLocation(
+                    Priority.PRIORITY_HIGH_ACCURACY,
+                    cancellationTokenSource.token
+                )
+                    .addOnSuccessListener { location: Location? ->
+                        val searchLocation = if (location != null) {
+                            currentLocation = location
+                            val currentLatLng = LatLng(location.latitude, location.longitude)
+                            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 15f))
+                            currentLatLng
+                        } else {
+                            mMap.cameraPosition.target
+                        }
+                        searchForPlaces(query, searchLocation)
+                    }.addOnFailureListener {
+                        loadPlacesFromCache()
                     }
-                    searchForPlaces(query, searchLocation)
-                }.addOnFailureListener {
-                    loadPlacesFromCache()
-                }
+            } catch (e: SecurityException) {
+                Log.e(TAG, "Location permission has been revoked.", e)
+                loadPlacesFromCache()
+            }
         } else {
-            searchForPlaces(query, mMap.cameraPosition.target)
+            loadPlacesFromCache()
         }
     }
 
