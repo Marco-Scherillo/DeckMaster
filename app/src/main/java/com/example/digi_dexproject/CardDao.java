@@ -18,4 +18,8 @@ public interface CardDao {
 
     @Query("SELECT COUNT(*) FROM cards")
     int countCards();
+
+    // Required for the ScanFragment logic
+    @Query("SELECT * FROM cards WHERE name LIKE :searchQuery LIMIT 1")
+    CardEntity findByName(String searchQuery);
 }
