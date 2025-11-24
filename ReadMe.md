@@ -218,5 +218,7 @@ The app also includes **Deck Scanner Reminders**, which notify players when they
 - [x]  Add profile page/fragment
 - [ ] Improve Syle of all fragments(in progress)
 
+  ## DEMO
+
 <br>
 
