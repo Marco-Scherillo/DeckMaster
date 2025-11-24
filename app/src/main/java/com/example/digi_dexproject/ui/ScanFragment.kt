@@ -1,6 +1,7 @@
 package com.example.digi_dexproject.ui
 
 import android.Manifest
+import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
@@ -19,6 +20,7 @@ import androidx.lifecycle.lifecycleScope
 import com.example.digi_dexproject.AppDatabase
 import com.example.digi_dexproject.MainActivity
 import com.example.digi_dexproject.R
+import com.example.digi_dexproject.UserDatabase
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
@@ -105,26 +107,48 @@ class ScanFragment : Fragment() {
         isProcessing = true
 
         lifecycleScope.launch(Dispatchers.IO) {
-            val db = AppDatabase.getDatabase(requireContext())
-            // Note: Ensure findByName is implemented in CardDao (see step 2)
+            val context = requireContext()
+            val db = AppDatabase.getDatabase(context)
             val card = db.cardDao().findByName(cardName)
 
-            withContext(Dispatchers.Main) {
-                if (card != null) {
-                    Toast.makeText(requireContext(), "Found Card: ${card.name}", Toast.LENGTH_SHORT).show()
+            if (card != null) {
+                // 1. Logic to add card to User's database
+                val prefs = context.getSharedPreferences(MainActivity.PREFS_NAME, Context.MODE_PRIVATE)
+                val username = prefs.getString(MainActivity.KEY_USERNAME, null)
+
+                if (username != null) {
+                    val userDb = UserDatabase.getDatabase(context)
+                    val userDao = userDb.userDao()
+                    val user = userDao.getUserByUsername(username)
+
+                    if (user != null) {
+                        // Check for duplicates
+                        if (!user.scannedCards.contains(card.name)) {
+                            val updatedList = user.scannedCards.toMutableList().apply {
+                                add(card.name)
+                            }
+                            // Update user in DB
+                            userDao.updateUser(user.copy(scannedCards = updatedList))
+                        }
+                    }
+                }
+
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(context, "Found & Saved: ${card.name}", Toast.LENGTH_SHORT).show()
                     (activity as? MainActivity)?.onCardScanned()
                     delay(2000)
-                } else {
-                    // --- NEW CODE: Display Not Found Message ---
+                }
+            } else {
+                withContext(Dispatchers.Main) {
                     Toast.makeText(
-                        requireContext(),
+                        context,
                         "$cardName Not Found! Please try another card or try again",
                         Toast.LENGTH_SHORT
                     ).show()
-                    delay(2000) // Delay to prevent Toast spamming
+                    delay(2000)
                 }
-                isProcessing = false
             }
+            isProcessing = false
         }
     }
 
@@ -164,7 +188,6 @@ class ScanFragment : Fragment() {
         private fun processText(text: com.google.mlkit.vision.text.Text, width: Int, height: Int) {
             if (text.textBlocks.isEmpty()) return
 
-            // Filter for text in the top 25% of the screen
             val topRegionLimit = height * 0.25
 
             val titleBlock = text.textBlocks
