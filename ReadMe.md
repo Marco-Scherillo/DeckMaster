@@ -201,6 +201,11 @@ The app also includes **Deck Scanner Reminders**, which notify players when they
 - [x] User can navigate using the bottom navigation bar (Home, Scan, Settings)  
 - [ ] User can scan cards using their camera (in progress)  
 - [ ] Shops Tab displays nearby card shops (upcoming)
+* # Milestone 3 - Build Sprint 2 (Unit 9)
+  ## GitHub Project board
+  
+  ## Issue cards
+  ## Issues worked on this sprint
 
 <br>
 
