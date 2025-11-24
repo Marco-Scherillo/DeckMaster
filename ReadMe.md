@@ -203,9 +203,18 @@ The app also includes **Deck Scanner Reminders**, which notify players when they
 - [ ] Shops Tab displays nearby card shops (upcoming)
 * # Milestone 3 - Build Sprint 2 (Unit 9)
   ## GitHub Project board
-  
+  <img width="960" height="540" alt="milestone3projectboardPNG" src="https://github.com/user-attachments/assets/31fb3f57-ef93-403d-a58d-a447aa80df39" />
   ## Issue cards
+  <img width="960" height="540" alt="issuecardsmilestone2" src="https://github.com/user-attachments/assets/bfde34b3-b5e6-4d8b-ba2f-555dec1776af" />
   ## Issues worked on this sprint
+- [x] Maps fragment
+- [x] Load Nearby shops
+- [x] Camera Scanner
+- [x] Request GPS permissions
+- [x]  Add profile page/fragment
+- [ ] Improve Syle of all fragments(in progress)
+
+ ## DEMO
 
 <br>
 
