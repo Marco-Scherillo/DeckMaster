@@ -220,6 +220,6 @@ The app also includes **Deck Scanner Reminders**, which notify players when they
 - [ ] Profile page(in progress)
 
   ## DEMO
-[![Watch the video](https://img.youtube.com/vi/VIDEO_ID/0.jpg)](https://www.youtube.com/watch?v=79m5gf1nD38)
+[![Watch the video](https://img.youtube.com/vi/79m5gf1nD38/0.jpg)](https://www.youtube.com/watch?v=79m5gf1nD38)
 <br>
 
