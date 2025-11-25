@@ -217,8 +217,9 @@ The app also includes **Deck Scanner Reminders**, which notify players when they
 - [x] Request GPS permissions
 - [x]  Add profile page/fragment
 - [ ] Improve Syle of all fragments(in progress)
+- [ ] Profile page(in progress)
 
   ## DEMO
-
+[![Watch the video](https://img.youtube.com/vi/VIDEO_ID/0.jpg)](https://www.youtube.com/watch?v=79m5gf1nD38)
 <br>
 
