@@ -81,6 +81,7 @@ dependencies {
     implementation("androidx.work:work-runtime-ktx:2.9.0")
     implementation("com.google.android.gms:play-services-maps:18.2.0")
     implementation("com.google.android.libraries.places:places:3.4.0")
+    implementation("com.google.code.gson:gson:2.10.1")
 
 
     // CameraX
