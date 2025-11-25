@@ -221,5 +221,7 @@ The app also includes **Deck Scanner Reminders**, which notify players when they
 
   ## DEMO
 [![Watch the video](https://img.youtube.com/vi/79m5gf1nD38/0.jpg)](https://www.youtube.com/watch?v=79m5gf1nD38)
+## DEMO with card reading showcase
+<img src="https://i.imgur.com/K7BVdqg.gif" width=600>
 <br>
 
