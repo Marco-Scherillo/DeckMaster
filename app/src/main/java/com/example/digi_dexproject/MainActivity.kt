@@ -1,7 +1,9 @@
 package com.example.digi_dexproject
 
+import android.Manifest
 import android.content.Context
 import android.content.SharedPreferences
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -22,16 +24,35 @@ import kotlinx.coroutines.launch
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import androidx.work.*
+import java.util.concurrent.TimeUnit
+import android.os.Build
+import androidx.activity.result.contract.ActivityResultContracts
+import com.example.digi_dexproject.ui.ProfileFragment
+
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var bottomNavigation: BottomNavigationView
     private lateinit var prefs: SharedPreferences
 
+    private val reminderWorkTag = "scanReminderWork"
+
     companion object {
         const val PREFS_NAME = "DigiDexPrefs"
         const val KEY_IS_LOGGED_IN = "isLoggedIn"
         const val KEY_USERNAME = "username"
+    }
+
+    private val requestPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted: Boolean ->
+        if (isGranted) {
+            // Permission is granted. Now we can schedule the work.
+            scheduleReminder()
+        } else {
+            // Permission denied. You might want to inform the user or disable the switch.
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -71,6 +92,7 @@ class MainActivity : AppCompatActivity() {
                 R.id.navigation_home -> selectedFragment = HomeFragment()
                 R.id.navigation_scan -> selectedFragment = ScanFragment()
                 R.id.navigation_map -> selectedFragment = MapFragment()
+                R.id.navigation_profile -> selectedFragment = ProfileFragment()
                 R.id.navigation_settings -> selectedFragment = SettingsFragment()
             }
             loadFragment(selectedFragment)
@@ -175,4 +197,66 @@ class MainActivity : AppCompatActivity() {
             }
         })
     }
+
+    //The way we will do it, reminds once a day, but for testing the other one will be every 15 seconds
+//    fun scheduleReminder() {
+//        // First, check for notification permission on Android 13 (API 33) or higher
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+//            if (checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+//                // If permission is not granted, launch the permission request dialog
+//                requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+//                return // Exit the function; the rest of the code will run if the user grants permission
+//            }
+//        }
+//
+//        // Set up the recurring work request to run roughly once a day
+//        val reminderWorkRequest = PeriodicWorkRequestBuilder<ReminderWorker>(1, TimeUnit.DAYS).build()
+//
+//        // Enqueue the work with a unique tag, keeping existing work if it's already scheduled
+//        WorkManager.getInstance(this).enqueueUniquePeriodicWork(
+//            reminderWorkTag,
+//            ExistingPeriodicWorkPolicy.KEEP,
+//            reminderWorkRequest
+//        )
+//    }
+
+    fun scheduleReminder() {
+        // First, check for notification permission on Android 13 (API 33) or higher
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                // If permission is not granted, launch the permission request dialog
+                requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                return // Exit the function; the rest of the code will run if the user grants permission
+            }
+        }
+
+        // --- THIS IS THE MODIFIED PART FOR TESTING ---
+
+        // Instead of a periodic request, create a One-Time request.
+        // We set an initial delay of 15 seconds to give you time to close the app.
+        val reminderWorkRequest = OneTimeWorkRequestBuilder<ReminderWorker>()
+            .setInitialDelay(15, TimeUnit.SECONDS)
+            .build()
+
+        // Enqueue the unique work.
+        // IMPORTANT: Change the policy to REPLACE. This ensures that when we schedule the "next" test,
+        // it replaces the old one, creating a repeating effect.
+        WorkManager.getInstance(this).enqueueUniqueWork(
+            reminderWorkTag,
+            ExistingWorkPolicy.REPLACE, // Use REPLACE for testing
+            reminderWorkRequest
+        )
+    }
+
+
+    fun cancelReminder() {
+        WorkManager.getInstance(this).cancelUniqueWork(reminderWorkTag)
+    }
+
+    // Call this function whenever a user successfully scans a card
+    fun onCardScanned() {
+        prefs.edit().putLong(ReminderWorker.KEY_LAST_SCAN_TIME, System.currentTimeMillis()).apply()
+    }
+
+
 }

@@ -1,3 +1,6 @@
 <resources>
     <string name="app_name">Digi-Dex Project</string>
+
+    <!-- ... your other strings like app_name ... -->
+    <string name="MAPS_API_KEY" translatable="false">${MAPS_API_KEY}</string>
 </resources>

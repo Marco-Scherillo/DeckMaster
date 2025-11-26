@@ -24,11 +24,9 @@ class AuthFragment : Fragment() {
         toLoginButton.setOnClickListener {
             (activity as? MainActivity)?.loadFragment(LoginFragment())
         }
-
         toRegisterButton.setOnClickListener {
             (activity as? MainActivity)?.loadFragment(RegisterFragment())
         }
-
         return view
     }
 }
