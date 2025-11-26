@@ -24,4 +24,22 @@ public class Converters {
     public static String fromList(List<String> list) {
         return gson.toJson(list);
     }
+    @TypeConverter
+    public static String fromCardPriceList(List<CardPrice> cardPrices) {
+        if (cardPrices == null) {
+            return null;
+        }
+        Gson gson = new Gson();
+        return gson.toJson(cardPrices);
+    }
+
+    @TypeConverter
+    public static List<CardPrice> toCardPriceList(String data) {
+        if (data == null) {
+            return Collections.emptyList();
+        }
+        Gson gson = new Gson();
+        Type listType = new TypeToken<List<CardPrice>>() {}.getType();
+        return gson.fromJson(data, listType);
+    }
 }

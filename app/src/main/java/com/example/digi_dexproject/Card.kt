@@ -14,7 +14,8 @@ data class Card(
     val atk: Int,
     val def: Int,
     val desc: String,
-    val card_images: List<CardImage>
+    val card_images: List<CardImage>,
+    val card_prices: List<CardPrice>
 ) : Parcelable
 
 @Parcelize
@@ -27,4 +28,13 @@ data class CardImage(
     val imageUrlSmall: String,
     @SerializedName("image_url_cropped")
     val imageUrlCropped: String?
+) : Parcelable
+
+@Parcelize
+data class CardPrice(
+    val cardmarket_price: String,
+    val tcgplayer_price: String,
+    val ebay_price: String,
+    val amazon_price: String,
+    val coolstuffinc_price: String
 ) : Parcelable

@@ -107,7 +107,8 @@ class HomeFragment : Fragment() {
             atk = cardEntity.atk ?: 0,
             def = cardEntity.def ?: 0,
             desc = cardEntity.desc ?: "",
-            card_images = cardImages
+            card_images = cardImages,
+            card_prices = cardEntity.cardPrices ?: emptyList()
         )
     }
 }
