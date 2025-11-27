@@ -8,6 +8,5 @@ data class User(
     @PrimaryKey
     val username: String,
     val passwordHash: String,
-    // Add the new column to store scanned cards
     val scannedCards: List<String> = emptyList()
 )

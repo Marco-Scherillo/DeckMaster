@@ -7,61 +7,96 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.digi_dexproject.AppDatabase
+import com.example.digi_dexproject.Card
 import com.example.digi_dexproject.CardAdapter
+import com.example.digi_dexproject.CardImage
 import com.example.digi_dexproject.MainActivity
 import com.example.digi_dexproject.R
+import com.example.digi_dexproject.UserDatabase
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
-/**
- * A fragment to display the user's profile information, including their username
- * and a list of their collected cards.
- */
 class ProfileFragment : Fragment() {
 
     private lateinit var usernameTextView: TextView
     private lateinit var cardsRecyclerView: RecyclerView
+    private lateinit var cardAdapter: CardAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
         val view = inflater.inflate(R.layout.fragment_profile, container, false)
 
-        // Find the UI elements from the layout
         usernameTextView = view.findViewById(R.id.text_view_username)
         cardsRecyclerView = view.findViewById(R.id.recycler_view_profile_cards)
 
-        // Set up the RecyclerView with a placeholder adapter
         setupRecyclerView()
-
-        // Load the user's data
         loadUserData()
 
         return view
     }
 
     private fun loadUserData() {
-        // Get the SharedPreferences instance to read saved data
         val prefs = requireActivity().getSharedPreferences(MainActivity.PREFS_NAME, Context.MODE_PRIVATE)
-
-        // Read the saved username. If it doesn't exist, default to "Guest".
         val username = prefs.getString(MainActivity.KEY_USERNAME, "Guest")
-
-        // Set the username in the TextView
         usernameTextView.text = username
+
+        lifecycleScope.launch(Dispatchers.IO) {
+            val context = requireContext()
+            val userDb = UserDatabase.getDatabase(context)
+            val appDb = AppDatabase.getDatabase(context)
+            val user = userDb.userDao().getUserByUsername(username!!)
+
+            if (user != null) {
+                val scannedCardNames = user.scannedCards
+                val scannedCardEntities = appDb.cardDao().getCardsByNames(scannedCardNames)
+                val scannedCards = scannedCardEntities.map { entity ->
+                    Card(
+                        name = entity.name,
+                        level = entity.level ?: 0,
+                        type = entity.type,
+                        attribute = entity.attribute ?: "",
+                        race = entity.race ?: "",
+                        atk = entity.atk ?: 0,
+                        def = entity.def ?: 0,
+                        desc = entity.desc,
+                        card_images = listOfNotNull(
+                             entity.imageUrlSmall?.let {
+                                CardImage(
+                                    id = entity.id,
+                                    imageUrl = entity.imageUrl ?: "",
+                                    imageUrlSmall = it,
+                                    imageUrlCropped = ""
+                                )
+                            }
+                        )
+                    )
+                }
+                withContext(Dispatchers.Main) {
+                    cardAdapter.updateData(scannedCards, scannedCardNames.toSet())
+                }
+            }
+        }
     }
 
     private fun setupRecyclerView() {
-        // Set the layout manager that the RecyclerView will use
         cardsRecyclerView.layoutManager = LinearLayoutManager(requireContext())
-
-        // Create an adapter with an empty list for now (our placeholder)
-        // We will need to fix the CardAdapter for this to work
-        val cardAdapter = CardAdapter(emptyList()) { card ->
-            // This is where you would handle a click on a card in the future
+        cardAdapter = CardAdapter(emptyList(), emptySet()) { card ->
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.fragment_container, CardDetailFragment.newInstance(card))
+                .addToBackStack(null)
+                .commit()
         }
         cardsRecyclerView.adapter = cardAdapter
+    }
+
+    private fun displayScannedCards(cards: List<Card>) {
+        cardAdapter.updateData(cards)
     }
 }
