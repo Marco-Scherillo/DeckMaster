@@ -199,65 +199,31 @@ class MainActivity : AppCompatActivity() {
         })
     }
 
-    //The way we will do it, reminds once a day, but for testing the other one will be every 15 seconds
-//    fun scheduleReminder() {
-//        // First, check for notification permission on Android 13 (API 33) or higher
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-//            if (checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-//                // If permission is not granted, launch the permission request dialog
-//                requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-//                return // Exit the function; the rest of the code will run if the user grants permission
-//            }
-//        }
-//
-//        // Set up the recurring work request to run roughly once a day
-//        val reminderWorkRequest = PeriodicWorkRequestBuilder<ReminderWorker>(1, TimeUnit.DAYS).build()
-//
-//        // Enqueue the work with a unique tag, keeping existing work if it's already scheduled
-//        WorkManager.getInstance(this).enqueueUniquePeriodicWork(
-//            reminderWorkTag,
-//            ExistingPeriodicWorkPolicy.KEEP,
-//            reminderWorkRequest
-//        )
-//    }
-
     fun scheduleReminder() {
-        // First, check for notification permission on Android 13 (API 33) or higher
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-                // If permission is not granted, launch the permission request dialog
                 requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-                return // Exit the function; the rest of the code will run if the user grants permission
+                return
             }
         }
 
-        // --- THIS IS THE MODIFIED PART FOR TESTING ---
-
-        // Instead of a periodic request, create a One-Time request.
-        // We set an initial delay of 15 seconds to give you time to close the app.
         val reminderWorkRequest = OneTimeWorkRequestBuilder<ReminderWorker>()
             .setInitialDelay(15, TimeUnit.SECONDS)
             .build()
 
-        // Enqueue the unique work.
-        // IMPORTANT: Change the policy to REPLACE. This ensures that when we schedule the "next" test,
-        // it replaces the old one, creating a repeating effect.
         WorkManager.getInstance(this).enqueueUniqueWork(
             reminderWorkTag,
-            ExistingWorkPolicy.REPLACE, // Use REPLACE for testing
+            ExistingWorkPolicy.REPLACE,
             reminderWorkRequest
         )
     }
-
 
     fun cancelReminder() {
         WorkManager.getInstance(this).cancelUniqueWork(reminderWorkTag)
     }
 
-    // Call this function whenever a user successfully scans a card
     fun onCardScanned() {
         prefs.edit().putLong(ReminderWorker.KEY_LAST_SCAN_TIME, System.currentTimeMillis()).apply()
+        bottomNavigation.selectedItemId = R.id.navigation_profile
     }
-
-
 }

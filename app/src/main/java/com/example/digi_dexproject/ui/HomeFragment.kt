@@ -1,5 +1,6 @@
 package com.example.digi_dexproject.ui
 
+import android.content.Context
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -16,7 +17,9 @@ import com.example.digi_dexproject.Card
 import com.example.digi_dexproject.CardAdapter
 import com.example.digi_dexproject.CardEntity
 import com.example.digi_dexproject.CardImage
+import com.example.digi_dexproject.MainActivity
 import com.example.digi_dexproject.R
+import com.example.digi_dexproject.UserDatabase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -27,6 +30,7 @@ class HomeFragment : Fragment() {
     private lateinit var cardAdapter: CardAdapter
     private lateinit var searchBar: EditText
     private var allCards: List<Card> = emptyList()
+    private var scannedCardNames: Set<String> = emptySet()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -43,7 +47,7 @@ class HomeFragment : Fragment() {
         recyclerView.layoutManager = LinearLayoutManager(context)
         searchBar = view.findViewById(R.id.search_bar)
 
-        loadCardsFromDatabase()
+        loadScannedCardsAndThenAllCards()
         setupSearch()
     }
 
@@ -63,30 +67,37 @@ class HomeFragment : Fragment() {
         val filteredList = allCards.filter {
             it.name.contains(query, ignoreCase = true)
         }
-        cardAdapter = CardAdapter(filteredList) { card ->
-            parentFragmentManager.beginTransaction()
-                .replace(R.id.fragment_container, CardDetailFragment.newInstance(card))
-                .addToBackStack(null)
-                .commit()
-        }
-        recyclerView.adapter = cardAdapter
+        cardAdapter.updateData(filteredList)
     }
 
-    private fun loadCardsFromDatabase() {
+    private fun loadScannedCardsAndThenAllCards() {
         lifecycleScope.launch(Dispatchers.IO) {
-            val cardDao = AppDatabase.getDatabase(requireContext()).cardDao()
-            val cardEntities = cardDao.getAll()
-            allCards = cardEntities.map { toCardData(it) }
-
-            withContext(Dispatchers.Main) {
-                cardAdapter = CardAdapter(allCards) { card ->
-                    parentFragmentManager.beginTransaction()
-                        .replace(R.id.fragment_container, CardDetailFragment.newInstance(card))
-                        .addToBackStack(null)
-                        .commit()
+            val username = requireActivity().getSharedPreferences(MainActivity.PREFS_NAME, Context.MODE_PRIVATE)
+                .getString(MainActivity.KEY_USERNAME, null)
+            if (username != null) {
+                val userDb = UserDatabase.getDatabase(requireContext())
+                val user = userDb.userDao().getUserByUsername(username)
+                if (user != null) {
+                    scannedCardNames = user.scannedCards.toSet()
                 }
-                recyclerView.adapter = cardAdapter
             }
+            loadAllCards()
+        }
+    }
+
+    private suspend fun loadAllCards() {
+        val cardDao = AppDatabase.getDatabase(requireContext()).cardDao()
+        val cardEntities = cardDao.getAll()
+        allCards = cardEntities.map { toCardData(it) }
+
+        withContext(Dispatchers.Main) {
+            cardAdapter = CardAdapter(allCards, scannedCardNames) { card ->
+                parentFragmentManager.beginTransaction()
+                    .replace(R.id.fragment_container, CardDetailFragment.newInstance(card))
+                    .addToBackStack(null)
+                    .commit()
+            }
+            recyclerView.adapter = cardAdapter
         }
     }
 
