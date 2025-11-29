@@ -22,4 +22,7 @@ public interface CardDao {
     // Required for the ScanFragment logic
     @Query("SELECT * FROM cards WHERE name LIKE :searchQuery LIMIT 1")
     CardEntity findByName(String searchQuery);
+
+    @Query("SELECT * FROM cards WHERE name IN (:names)")
+    List<CardEntity> getCardsByNames(List<String> names);
 }

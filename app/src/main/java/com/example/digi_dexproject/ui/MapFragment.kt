@@ -3,6 +3,7 @@ package com.example.digi_dexproject.ui
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.location.Location
@@ -15,13 +16,16 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.widget.SearchView
 import androidx.cardview.widget.CardView
-import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.digi_dexproject.BuildConfig
+import com.example.digi_dexproject.MainActivity
 import com.example.digi_dexproject.R
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
@@ -62,6 +66,20 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         File(requireContext().cacheDir, "places_cache.json")
     }
 
+    private val requestPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted: Boolean ->
+        if (isGranted) {
+            locationPermissionGranted = true
+            updateLocationUI()
+            getDeviceLocation()
+        } else {
+            locationPermissionGranted = false
+            updateLocationUI()
+            Toast.makeText(context, "Location permission denied. Map features will be limited.", Toast.LENGTH_LONG).show()
+        }
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -71,6 +89,13 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        if (BuildConfig.MAPS_API_KEY.isEmpty()) {
+            Toast.makeText(requireContext(), "MAPS_API_KEY not found", Toast.LENGTH_LONG).show()
+            val intent = Intent(requireContext(), MainActivity::class.java)
+            startActivity(intent)
+            return
+        }
+
 
         if (!Places.isInitialized()) {
             Places.initialize(requireContext(), BuildConfig.MAPS_API_KEY)
@@ -104,7 +129,6 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         return networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
     }
 
-
     private fun setupSearchView() {
         searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
@@ -122,39 +146,38 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     }
 
     private fun runSearchWithCurrentLocation(query: String) {
+        if (!locationPermissionGranted) {
+            getLocationPermission() // Re-prompt for permission
+            return // Do not proceed
+        }
+
         if (!isNetworkAvailable()) {
             loadPlacesFromCache()
             return
         }
 
-        if (locationPermissionGranted) {
-            try {
-                // Suppress lint warning, as we are handling the exception.
-                @SuppressLint("MissingPermission")
-                val cancellationTokenSource = CancellationTokenSource()
-                fusedLocationProviderClient.getCurrentLocation(
-                    Priority.PRIORITY_HIGH_ACCURACY,
-                    cancellationTokenSource.token
-                )
-                    .addOnSuccessListener { location: Location? ->
-                        val searchLocation = if (location != null) {
-                            currentLocation = location
-                            val currentLatLng = LatLng(location.latitude, location.longitude)
-                            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 15f))
-                            currentLatLng
-                        } else {
-                            mMap.cameraPosition.target
-                        }
-                        searchForPlaces(query, searchLocation)
-                    }.addOnFailureListener {
-                        loadPlacesFromCache()
+        try {
+            @SuppressLint("MissingPermission")
+            val cancellationTokenSource = CancellationTokenSource()
+            fusedLocationProviderClient.getCurrentLocation(
+                Priority.PRIORITY_HIGH_ACCURACY,
+                cancellationTokenSource.token
+            )
+                .addOnSuccessListener { location: Location? ->
+                    val searchLocation = if (location != null) {
+                        currentLocation = location
+                        val currentLatLng = LatLng(location.latitude, location.longitude)
+                        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 15f))
+                        currentLatLng
+                    } else {
+                        mMap.cameraPosition.target
                     }
-            } catch (e: SecurityException) {
-                Log.e(TAG, "Location permission has been revoked.", e)
-                loadPlacesFromCache()
-            }
-        } else {
-            loadPlacesFromCache()
+                    searchForPlaces(query, searchLocation)
+                }.addOnFailureListener {
+                    loadPlacesFromCache()
+                }
+        } catch (e: SecurityException) {
+            Log.e(TAG, "Location permission has been revoked.", e)
         }
     }
 
@@ -165,8 +188,6 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         mMap.uiSettings.isZoomGesturesEnabled = true
         mMap.uiSettings.isCompassEnabled = true
         getLocationPermission()
-        updateLocationUI()
-        getDeviceLocation()
 
         mMap.setOnMarkerClickListener { marker ->
             marker.tag?.let { showPlaceDetails(it as Place) }
@@ -213,17 +234,18 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     }
 
     private fun displayPlaces(places: List<Place>) {
-        currentLocation?.let {
-            placesAdapter = PlacesAdapter(places, it) { place ->
-                showPlaceDetails(place)
-                place.latLng?.let {
-                    mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(it, 15f))
-                    placesRecyclerView.visibility = View.GONE
-                }
+        val lastKnownLocation = currentLocation ?: return
+
+        placesAdapter = PlacesAdapter(places, lastKnownLocation) { place ->
+            showPlaceDetails(place)
+            place.latLng?.let {
+                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(it, 15f))
+                placesRecyclerView.visibility = View.GONE
             }
-            placesRecyclerView.adapter = placesAdapter
-            placesRecyclerView.visibility = View.VISIBLE
         }
+        placesRecyclerView.adapter = placesAdapter
+        placesRecyclerView.visibility = View.VISIBLE
+
         for (place in places) {
             place.latLng?.let { latLng ->
                 val marker = mMap.addMarker(
@@ -238,8 +260,10 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     }
 
     private fun savePlacesToCache(places: List<Place>) {
-        val serializablePlaces = places.map {
-            SerializablePlace(it.name, it.address, it.latLng)
+        val serializablePlaces = places.mapNotNull { place ->
+            if (place.name != null && place.address != null && place.latLng != null) {
+                 SerializablePlace(place.name!!, place.address!!, place.latLng!!)
+            } else null
         }
         val gson = Gson()
         val json = gson.toJson(serializablePlaces)
@@ -247,11 +271,11 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     }
 
     private fun loadPlacesFromCache() {
-        if (placesCacheFile.exists()) {
+        if (placesCacheFile.exists() && locationPermissionGranted) {
             val gson = Gson()
             val json = placesCacheFile.readText()
             val type = object : TypeToken<List<SerializablePlace>>() {}.type
-            val serializablePlaces = gson.fromJson<List<SerializablePlace>>(json, type)
+            val serializablePlaces: List<SerializablePlace> = gson.fromJson(json, type)
 
             val places = serializablePlaces.map {
                 Place.builder()
@@ -293,31 +317,21 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     }
 
     private fun getLocationPermission() {
-        if (ActivityCompat.checkSelfPermission(
+        when {
+            ContextCompat.checkSelfPermission(
                 requireContext(),
                 Manifest.permission.ACCESS_FINE_LOCATION
-            ) == PackageManager.PERMISSION_GRANTED
-        ) {
-            locationPermissionGranted = true
-        } else {
-            requestPermissions(
-                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
-                PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION
-            )
-        }
-    }
-
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<String>,
-        grantResults: IntArray
-    ) {
-        locationPermissionGranted = false
-        if (requestCode == PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION) {
-            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            ) == PackageManager.PERMISSION_GRANTED -> {
                 locationPermissionGranted = true
                 updateLocationUI()
                 getDeviceLocation()
+            }
+            shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION) -> {
+                Toast.makeText(context, "Location permission is required to find nearby stores.", Toast.LENGTH_LONG).show()
+                requestPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+            }
+            else -> {
+                requestPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
             }
         }
     }
@@ -332,6 +346,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             } else {
                 mMap.isMyLocationEnabled = false
                 mMap.uiSettings.isMyLocationButtonEnabled = false
+                mMap.clear()
             }
         } catch (e: SecurityException) {
             Log.e(TAG, "Security exception in updateLocationUI", e)
@@ -340,31 +355,25 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
     @SuppressLint("MissingPermission")
     private fun getDeviceLocation() {
-        if (!::mMap.isInitialized) return
+        if (!::mMap.isInitialized || !locationPermissionGranted) return
         try {
-            if (locationPermissionGranted) {
-                Log.d(TAG, "Fetching current location with balanced power accuracy.")
-                val cancellationTokenSource = CancellationTokenSource()
-                fusedLocationProviderClient.getCurrentLocation(
-                    Priority.PRIORITY_BALANCED_POWER_ACCURACY,
-                    cancellationTokenSource.token
-                )
-                    .addOnSuccessListener { location: Location? ->
-                        if (location != null) {
-                            currentLocation = location
-                            val currentLatLng = LatLng(location.latitude, location.longitude)
-                            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 15f))
-                            Log.d(TAG, "Successfully fetched current location: $currentLatLng")
-                        } else {
-                            Log.d(TAG, "Failed to get current location. Using defaults.")
-                        }
+            fusedLocationProviderClient.getCurrentLocation(
+                Priority.PRIORITY_BALANCED_POWER_ACCURACY,
+                CancellationTokenSource().token
+            )
+                .addOnSuccessListener { location: Location? ->
+                    if (location != null) {
+                        currentLocation = location
+                        val currentLatLng = LatLng(location.latitude, location.longitude)
+                        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 15f))
+                        Log.d(TAG, "Successfully fetched current location: $currentLatLng")
+                    } else {
+                        Log.d(TAG, "Failed to get current location. Using defaults.")
                     }
-                    .addOnFailureListener { e ->
-                        Log.e(TAG, "Exception while getting location", e)
-                    }
-            } else {
-                Log.d(TAG, "Location permission not granted. Using defaults.")
-            }
+                }
+                .addOnFailureListener { e ->
+                    Log.e(TAG, "Exception while getting location", e)
+                }
         } catch (e: SecurityException) {
             Log.e(TAG, "Security exception in getDeviceLocation", e)
         }
@@ -372,6 +381,5 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
     companion object {
         private const val TAG = "MapFragment"
-        private const val PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1
     }
 }
