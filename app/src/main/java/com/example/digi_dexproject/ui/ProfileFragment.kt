@@ -1,5 +1,6 @@
 package com.example.digi_dexproject.ui
 
+import CardAdapter
 import android.content.Context
 import android.os.Bundle
 import androidx.fragment.app.Fragment
@@ -12,7 +13,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.digi_dexproject.AppDatabase
 import com.example.digi_dexproject.Card
-import com.example.digi_dexproject.CardAdapter
 import com.example.digi_dexproject.CardImage
 import com.example.digi_dexproject.MainActivity
 import com.example.digi_dexproject.R
@@ -66,6 +66,7 @@ class ProfileFragment : Fragment() {
                         atk = entity.atk ?: 0,
                         def = entity.def ?: 0,
                         desc = entity.desc,
+                        card_prices = entity.cardPrices ?: emptyList(),
                         card_images = listOfNotNull(
                              entity.imageUrlSmall?.let {
                                 CardImage(

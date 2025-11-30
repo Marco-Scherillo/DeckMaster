@@ -40,4 +40,6 @@ public class CardEntity {
 
     @ColumnInfo(name = "image_url_small")
     public String imageUrlSmall;
+    @ColumnInfo(name = "card_prices")
+    public List<CardPrice> cardPrices;
 }

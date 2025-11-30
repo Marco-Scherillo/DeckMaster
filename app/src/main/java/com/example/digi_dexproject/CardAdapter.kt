@@ -1,5 +1,3 @@
-package com.example.digi_dexproject
-
 import android.graphics.ColorMatrix
 import android.graphics.ColorMatrixColorFilter
 import android.view.LayoutInflater
@@ -9,6 +7,8 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.example.digi_dexproject.Card
+import com.example.digi_dexproject.R
 
 class CardAdapter(
     private var cards: List<Card>,
@@ -38,6 +38,8 @@ class CardAdapter(
         private val cardImage: ImageView = itemView.findViewById(R.id.card_image)
         private val cardName: TextView = itemView.findViewById(R.id.card_name)
         private val cardType: TextView = itemView.findViewById(R.id.card_type)
+        // FIX: Changed to singular to match R.id.card_price
+        private val cardPrice: TextView = itemView.findViewById(R.id.card_price)
 
         fun bind(card: Card) {
             cardName.text = card.name
@@ -54,6 +56,24 @@ class CardAdapter(
                 matrix.setSaturation(0f)
                 val filter = ColorMatrixColorFilter(matrix)
                 cardImage.colorFilter = filter
+            }
+
+
+            val priceInfo = card.card_prices.firstOrNull()
+            if (priceInfo != null) {
+                val priceStringBuilder = StringBuilder()
+                priceInfo.tcgplayerPrice?.let { if (it.isNotEmpty()) priceStringBuilder.append("TCG: $${it}\n") }
+                priceInfo.cardmarketPrice?.let { if (it.isNotEmpty()) priceStringBuilder.append("MKT: $${it}") }
+
+                val formattedPrices = priceStringBuilder.toString().trim()
+                if (formattedPrices.isNotEmpty()) {
+                    cardPrice.visibility = View.VISIBLE
+                    cardPrice.text = formattedPrices
+                } else {
+                    cardPrice.visibility = View.GONE
+                }
+            } else {
+                cardPrice.visibility = View.GONE
             }
 
             itemView.setOnClickListener {
