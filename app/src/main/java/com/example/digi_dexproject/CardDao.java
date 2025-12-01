@@ -23,6 +23,14 @@ public interface CardDao {
     @Query("SELECT * FROM cards WHERE name LIKE :searchQuery LIMIT 1")
     CardEntity findByName(String searchQuery);
 
+
     @Query("SELECT * FROM cards WHERE name IN (:names)")
     List<CardEntity> getCardsByNames(List<String> names);
+
+    @Query("SELECT name FROM cards WHERE name IN (:names)")
+    List<String> getExistingNames(List<String> names);
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    void insert(CardEntity card);
+
 }

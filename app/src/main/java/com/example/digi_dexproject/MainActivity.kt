@@ -34,6 +34,7 @@ import com.example.digi_dexproject.ui.ProfileFragment
 class MainActivity : AppCompatActivity() {
 
     private lateinit var bottomNavigation: BottomNavigationView
+    private var isDatabaseInitialized = false // <-- ADD THIS FLAG
     private lateinit var prefs: SharedPreferences
 
     private val reminderWorkTag = "scanReminderWork"
@@ -131,12 +132,13 @@ class MainActivity : AppCompatActivity() {
             .commit()
 
         // Only initialize the card database if we are loading the HomeFragment
-        if (fragment is HomeFragment) {
+        if (fragment is HomeFragment && !isDatabaseInitialized) {
             initializeDatabase()
         }
     }
 
     private fun initializeDatabase() {
+        isDatabaseInitialized = true // Set the flag immediately to break any loops
         lifecycleScope.launch(Dispatchers.IO) {
             val cardDao = AppDatabase.getDatabase(applicationContext).cardDao()
             val cardCount = cardDao.countCards()
@@ -145,6 +147,7 @@ class MainActivity : AppCompatActivity() {
                 Log.d("MainActivity", "Database is empty. Fetching cards...")
                 fetchAndSaveCards()
             } else {
+                importMissingDeckCards()
                 Log.d("MainActivity", "Database is already populated.")
             }
         }
@@ -182,9 +185,18 @@ class MainActivity : AppCompatActivity() {
                             }
                             cardDao.insertAll(cardEntities)
                             Log.d("MainActivity", "Data saved to database successfully.")
+//                            runOnUiThread {
+//                                loadFragment(HomeFragment())
+//                            }
+                            importMissingDeckCards()
+                            scheduleReminder()
+
+                            // Schedule the reminder
+
                         }
                     } else {
                         Log.w("MainActivity", "API response was successful but the data list is null or empty.")
+
                     }
                 } else {
                     val errorBody = response.errorBody()?.string()
@@ -197,6 +209,77 @@ class MainActivity : AppCompatActivity() {
             }
         })
     }
+
+    private fun importMissingDeckCards() {
+        val apiService = RetrofitClient.getClient().create(ApiService::class.java)
+
+        lifecycleScope.launch(Dispatchers.IO) {
+            val cardDao = AppDatabase.getDatabase(applicationContext).cardDao()
+            val existingNames = cardDao.getExistingNames(myCardNames)
+            val missingNames = myCardNames.filter { it !in existingNames }
+
+            if (missingNames.isEmpty()) {
+                Log.d("IMPORT", "No deck cards missing. Finalizing.")
+                // Finalize the process here as well
+                scheduleReminder()
+                runOnUiThread { loadFragment(HomeFragment()) }
+                return@launch
+            }
+
+            Log.d("IMPORT", "Missing ${missingNames.size} cards → Fetching all in one batch.")
+
+            try {
+                // Join the names into a single string for the API
+                val namesQuery = missingNames.joinToString("|")
+
+                // Use .execute() for a direct, sequential call inside the coroutine
+                val response = apiService.getCardsByNames(namesQuery).execute()
+
+                if (response.isSuccessful) {
+                    val cardDataList = response.body()?.data
+                    if (cardDataList != null && cardDataList.isNotEmpty()) {
+                        Log.d("IMPORT", "Successfully fetched ${cardDataList.size} missing cards.")
+
+                        val cardEntities = cardDataList.map { cardData ->
+                            CardEntity().apply {
+                                id = cardData.id
+                                this.name = cardData.name
+                                type = cardData.type
+                                typeline = cardData.typeline
+                                desc = cardData.desc
+                                race = cardData.race
+                                atk = if (cardData.atk != 0) cardData.atk else null
+                                def = if (cardData.def != 0) cardData.def else null
+                                level = if (cardData.level != 0) cardData.level else null
+                                attribute = cardData.attribute
+                                imageUrl = cardData.cardImages?.firstOrNull()?.imageUrl
+                                imageUrlSmall = cardData.cardImages?.firstOrNull()?.imageUrlSmall
+                            }
+                        }
+                        cardDao.insertAll(cardEntities)
+                        Log.d("IMPORT", "All missing cards saved to database.")
+                    }
+                } else {
+                    Log.e("IMPORT", "Batch fetch failed with code: ${response.code()}")
+                }
+            } catch (e: Exception) {
+                Log.e("IMPORT", "Batch fetch failed entirely: ${e.message}", e)
+            }
+
+            // --- FINALIZATION ---
+            // This is the single, reliable end-point for the entire process.
+            Log.d("IMPORT", "Process complete. Scheduling reminder and refreshing UI.")
+            scheduleReminder()
+            runOnUiThread {
+                loadFragment(HomeFragment())
+            }
+        }
+    }
+
+
+
+
+
 
     fun scheduleReminder() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -225,4 +308,81 @@ class MainActivity : AppCompatActivity() {
         prefs.edit().putLong(ReminderWorker.KEY_LAST_SCAN_TIME, System.currentTimeMillis()).apply()
         bottomNavigation.selectedItemId = R.id.navigation_profile
     }
+
+    private val myCardNames = listOf(
+        "Summoned Skull",
+        "Giant Soldier of Stone",
+        "Infinite Cards",
+        "Mad Dog of Darkness",
+        "Royal Decree",
+        "Luster Dragon",
+        "Alpha the Magnet Warrior",
+        "Gamma the Magnet Warrior",
+        "Beta the Magnet Warrior",
+        "Valkyrion the Magna Warrior",
+        "Millennium Shield",
+        "Royal Magical Library",
+        "Spellbinding Circle",
+        "Trance the Magic Swordsman",
+        "Swords of Revealing Light",
+        "Slifer the Sky Dragon",
+        "Sabersaurus",
+        "Spirit of the Harp",
+        "Soul Taker",
+        "Sakuretsu Armor",
+        "Mystical Elf",
+        "Catapult Turtle",
+        "Pot of Duality",
+        "Heart of the Underdog",
+        "Bottomless Trap Hole",
+        "Supply Squad",
+        "Final Destiny",
+        "Gold Sarcophagus",
+        "Vorse Raider",
+        "Chamberlain of the Six Samurai",
+        "Aqua Madoor",
+        "Fissure",
+        "Left Arm of the Forbidden One",
+        "Right Arm of the Forbidden One",
+        "Left Leg of the Forbidden One",
+        "Right Leg of the Forbidden One",
+        "Exodia the Forbidden One",
+        "Dark Magician",
+        "Dark Magician Girl",
+        "Breaker the Magical Warrior",
+        "Skilled Dark Magician",
+        "Mystical Space Typhoon",
+        "Sorcerer of Dark Magic",
+        "Dark Magic Attack",
+        "Emblem of Dragon Destroyer",
+        "Sage’s Stone",
+        "Defender, the Magical Knight",
+        "Raigeki Break",
+        "Magician’s Circle",
+        "Gagaga Magician",
+        "Magician of Black Chaos",
+        "Black Illusion",
+        "Dark Magic Curtain",
+        "Call of the Haunted",
+        "Polymerization",
+        "Endymion, the Master Magician",
+        "Magic Cylinder",
+        "Summoner Monk",
+        "Thousand Knives",
+        "Mirror Force",
+        "Magical Dimension",
+        "Torrential Tribute",
+        "Old Vindictive Magician",
+        "Black Magic Ritual",
+        "Silent Magician LV4",
+        "Silent Magician LV8",
+        "Buster Blader",
+        "Level Lifter"
+    )
+
+
+
+
 }
+
+
