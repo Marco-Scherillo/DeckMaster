@@ -38,6 +38,10 @@ public class CardData {
 
     @SerializedName("card_images")
     private List<CardImage> cardImages;
+    @SerializedName("card_prices")
+    private List<CardPrice> card_prices;
+
+
 
 
     public int getId() {
@@ -84,6 +88,9 @@ public class CardData {
 
     public List<CardImage> getCardImages() {
         return cardImages;
+    }
+    public List<CardPrice> getCardPrices() {
+        return card_prices;
     }
 
 }
