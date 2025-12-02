@@ -43,4 +43,6 @@ public class CardEntity {
 
     public String scannedByUser;
 
+    @ColumnInfo(name = "card_prices")
+    public List<CardPrice> cardPrices;
 }

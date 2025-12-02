@@ -181,6 +181,7 @@ class MainActivity : AppCompatActivity() {
 
                                     imageUrl = cardData.cardImages?.firstOrNull()?.imageUrl
                                     imageUrlSmall = cardData.cardImages?.firstOrNull()?.imageUrlSmall
+                                    cardPrices = cardData.cardPrices
                                 }
                             }
                             cardDao.insertAll(cardEntities)

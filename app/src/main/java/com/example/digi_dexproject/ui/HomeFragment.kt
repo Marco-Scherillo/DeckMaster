@@ -1,5 +1,6 @@
 package com.example.digi_dexproject.ui
 
+import CardAdapter
 import android.content.Context
 import android.os.Bundle
 import android.text.Editable
@@ -12,14 +13,8 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.digi_dexproject.AppDatabase
-import com.example.digi_dexproject.Card
-import com.example.digi_dexproject.CardAdapter
-import com.example.digi_dexproject.CardEntity
-import com.example.digi_dexproject.CardImage
-import com.example.digi_dexproject.MainActivity
+import com.example.digi_dexproject.* // Import all necessary classes like Card, CardImage, CardPrice
 import com.example.digi_dexproject.R
-import com.example.digi_dexproject.UserDatabase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -29,7 +24,7 @@ class HomeFragment : Fragment() {
     private lateinit var recyclerView: RecyclerView
     private lateinit var cardAdapter: CardAdapter
     private lateinit var searchBar: EditText
-    private var allCards: List<Card> = emptyList()
+    private var allCards: List<Card> = emptyList() // The list that holds the full dataset
     private var scannedCardNames: Set<String> = emptySet()
 
     override fun onCreateView(
@@ -44,11 +39,28 @@ class HomeFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         recyclerView = view.findViewById(R.id.card_recycler_view)
-        recyclerView.layoutManager = LinearLayoutManager(context)
         searchBar = view.findViewById(R.id.search_bar)
 
+        // 1. Set up the RecyclerView and Adapter ONCE with empty data
+        setupRecyclerView()
+
+        // 2. Load the data from the database
         loadScannedCardsAndThenAllCards()
+
+        // 3. Set up the search functionality
         setupSearch()
+    }
+
+    private fun setupRecyclerView() {
+        // Initialize the adapter with an empty list. It will be updated later.
+        cardAdapter = CardAdapter(emptyList(), emptySet()) { card ->
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.fragment_container, CardDetailFragment.newInstance(card))
+                .addToBackStack(null)
+                .commit()
+        }
+        recyclerView.layoutManager = LinearLayoutManager(context)
+        recyclerView.adapter = cardAdapter
     }
 
     private fun setupSearch() {
@@ -64,10 +76,15 @@ class HomeFragment : Fragment() {
     }
 
     private fun filterCards(query: String) {
-        val filteredList = allCards.filter {
-            it.name.contains(query, ignoreCase = true)
+        val filteredList = if (query.isEmpty()) {
+            allCards // If search is empty, show the full list
+        } else {
+            allCards.filter {
+                it.name.contains(query, ignoreCase = true)
+            }
         }
-        cardAdapter.updateData(filteredList)
+        // Simply update the data in the existing adapter
+        cardAdapter.updateData(filteredList, scannedCardNames)
     }
 
     private fun loadScannedCardsAndThenAllCards() {
@@ -81,6 +98,7 @@ class HomeFragment : Fragment() {
                     scannedCardNames = user.scannedCards.toSet()
                 }
             }
+            // After getting scanned cards, load the main card list
             loadAllCards()
         }
     }
@@ -88,37 +106,44 @@ class HomeFragment : Fragment() {
     private suspend fun loadAllCards() {
         val cardDao = AppDatabase.getDatabase(requireContext()).cardDao()
         val cardEntities = cardDao.getAll()
+        // Convert the database entities to UI data objects and store them
         allCards = cardEntities.map { toCardData(it) }
 
+        // Switch to the main thread to update the UI
         withContext(Dispatchers.Main) {
-            cardAdapter = CardAdapter(allCards, scannedCardNames) { card ->
-                parentFragmentManager.beginTransaction()
-                    .replace(R.id.fragment_container, CardDetailFragment.newInstance(card))
-                    .addToBackStack(null)
-                    .commit()
-            }
-            recyclerView.adapter = cardAdapter
+            // Update the adapter with the full list of cards
+            cardAdapter.updateData(allCards, scannedCardNames)
         }
     }
 
+    // --- THIS IS THE IMPLEMENTED FIX ---
+    // This function now correctly converts a CardEntity into a complete Card object.
     private fun toCardData(cardEntity: CardEntity): Card {
-        val cardImages = listOf(CardImage(
-            id = cardEntity.id,
-            imageUrl = cardEntity.imageUrl ?: "",
-            imageUrlSmall = cardEntity.imageUrlSmall ?: "",
-            imageUrlCropped = null
-        ))
+        // Recreate the CardImage list from the database data
+        val cardImages = cardEntity.imageUrl?.let {
+            listOf(CardImage(
+                id = cardEntity.id,
+                imageUrl = it,
+                imageUrlSmall = cardEntity.imageUrlSmall ?: "",
+                imageUrlCropped = null
+            ))
+        } ?: emptyList()
 
+        // Get the CardPrice list from the database data
+        val cardPrices = cardEntity.cardPrices ?: emptyList()
+
+        // Return a complete Card object, including the prices
         return Card(
-            name = cardEntity.name,
+            name = cardEntity.name ?: "",
             level = cardEntity.level ?: 0,
-            type = cardEntity.type,
+            type = cardEntity.type ?: "",
             attribute = cardEntity.attribute ?: "",
             race = cardEntity.race ?: "",
             atk = cardEntity.atk ?: 0,
             def = cardEntity.def ?: 0,
             desc = cardEntity.desc ?: "",
-            card_images = cardImages
+            card_images = cardImages,
+            card_prices = cardPrices
         )
     }
 }
