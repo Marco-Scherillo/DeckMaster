@@ -147,7 +147,8 @@ class MainActivity : AppCompatActivity() {
                 Log.d("MainActivity", "Database is empty. Fetching cards...")
                 fetchAndSaveCards()
             } else {
-                importMissingDeckCards()
+                updateCardData()
+                //importMissingDeckCards()
                 Log.d("MainActivity", "Database is already populated.")
             }
         }
@@ -182,6 +183,7 @@ class MainActivity : AppCompatActivity() {
                                     imageUrl = cardData.cardImages?.firstOrNull()?.imageUrl
                                     imageUrlSmall = cardData.cardImages?.firstOrNull()?.imageUrlSmall
                                     cardPrices = cardData.cardPrices
+                                    lastUpdated = System.currentTimeMillis()
                                 }
                             }
                             cardDao.insertAll(cardEntities)
@@ -189,7 +191,8 @@ class MainActivity : AppCompatActivity() {
 //                            runOnUiThread {
 //                                loadFragment(HomeFragment())
 //                            }
-                            importMissingDeckCards()
+                            updateCardData()
+                            //importMissingDeckCards()
                             scheduleReminder()
 
                             // Schedule the reminder
@@ -211,27 +214,39 @@ class MainActivity : AppCompatActivity() {
         })
     }
 
-    private fun importMissingDeckCards() {
+    // DELETE THE ENTIRE importMissingDeckCards() FUNCTION
+
+    // AND REPLACE IT WITH THIS NEW FUNCTION:
+    private fun updateCardData() {
         val apiService = RetrofitClient.getClient().create(ApiService::class.java)
 
         lifecycleScope.launch(Dispatchers.IO) {
             val cardDao = AppDatabase.getDatabase(applicationContext).cardDao()
+
+            // 1. Find cards that are completely missing from your master list
             val existingNames = cardDao.getExistingNames(myCardNames)
             val missingNames = myCardNames.filter { it !in existingNames }
 
-            if (missingNames.isEmpty()) {
-                Log.d("IMPORT", "No deck cards missing. Finalizing.")
-                // Finalize the process here as well
+            // 2. Find cards in the DB that are older than 1 day
+            val oneDayAgo = System.currentTimeMillis() - TimeUnit.DAYS.toMillis(1)
+            val staleNames = cardDao.getStaleCardNames(oneDayAgo)
+
+            // 3. Combine the lists and remove duplicates to get our final update list
+            val namesToUpdate = (missingNames + staleNames).distinct()
+
+            if (namesToUpdate.isEmpty()) {
+                Log.d("UPDATE", "All cards are up-to-date. Finalizing.")
+                // Finalize the process here as this is an end-point
                 scheduleReminder()
                 runOnUiThread { loadFragment(HomeFragment()) }
                 return@launch
             }
 
-            Log.d("IMPORT", "Missing ${missingNames.size} cards → Fetching all in one batch.")
+            Log.d("UPDATE", "Found ${namesToUpdate.size} cards to update/add. Fetching...")
 
             try {
                 // Join the names into a single string for the API
-                val namesQuery = missingNames.joinToString("|")
+                val namesQuery = namesToUpdate.joinToString("|")
 
                 // Use .execute() for a direct, sequential call inside the coroutine
                 val response = apiService.getCardsByNames(namesQuery).execute()
@@ -239,7 +254,7 @@ class MainActivity : AppCompatActivity() {
                 if (response.isSuccessful) {
                     val cardDataList = response.body()?.data
                     if (cardDataList != null && cardDataList.isNotEmpty()) {
-                        Log.d("IMPORT", "Successfully fetched ${cardDataList.size} missing cards.")
+                        Log.d("UPDATE", "Successfully fetched ${cardDataList.size} cards for update.")
 
                         val cardEntities = cardDataList.map { cardData ->
                             CardEntity().apply {
@@ -255,27 +270,31 @@ class MainActivity : AppCompatActivity() {
                                 attribute = cardData.attribute
                                 imageUrl = cardData.cardImages?.firstOrNull()?.imageUrl
                                 imageUrlSmall = cardData.cardImages?.firstOrNull()?.imageUrlSmall
+                                cardPrices = cardData.cardPrices
+                                // Set the timestamp so we know it's fresh
+                                lastUpdated = System.currentTimeMillis()
                             }
                         }
                         cardDao.insertAll(cardEntities)
-                        Log.d("IMPORT", "All missing cards saved to database.")
+                        Log.d("UPDATE", "Saved/Updated ${cardEntities.size} cards in the database.")
                     }
                 } else {
-                    Log.e("IMPORT", "Batch fetch failed with code: ${response.code()}")
+                    Log.e("UPDATE", "Batch update failed with code: ${response.code()}")
                 }
             } catch (e: Exception) {
-                Log.e("IMPORT", "Batch fetch failed entirely: ${e.message}", e)
+                Log.e("UPDATE", "Failed to update cards: ${e.message}", e)
             }
 
             // --- FINALIZATION ---
-            // This is the single, reliable end-point for the entire process.
-            Log.d("IMPORT", "Process complete. Scheduling reminder and refreshing UI.")
+            // This is the single, reliable end-point for the entire data-syncing process.
+            Log.d("UPDATE", "Update process complete. Scheduling reminder and refreshing UI.")
             scheduleReminder()
             runOnUiThread {
                 loadFragment(HomeFragment())
             }
         }
     }
+
 
 
 
