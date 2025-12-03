@@ -45,4 +45,7 @@ public class CardEntity {
 
     @ColumnInfo(name = "card_prices")
     public List<CardPrice> cardPrices;
+
+    @ColumnInfo(name = "last_updated")
+    public long lastUpdated; // We'll store the timestamp in millisecond
 }

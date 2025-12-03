@@ -33,4 +33,6 @@ public interface CardDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insert(CardEntity card);
 
+    @Query("SELECT name FROM cards WHERE last_updated < :timestamp")
+    List<String> getStaleCardNames(long timestamp);
 }
